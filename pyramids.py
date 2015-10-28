@@ -1,6 +1,15 @@
 from PIL import Image
 import numpy as np 
 from scipy import signal as sg
+import scipy.stats as st
+
+def gaussian(kernlen=21, nsig=3):
+	interval = (2*nsig+1.)/(kernlen)
+	x = np.linspace(-nsig-interval/2., nsig+interval/2., kernlen+1)
+	kern1d = np.diff(st.norm.cdf(x))
+	kernel_raw = np.sqrt(np.outer(kern1d, kern1d))
+	kernel = kernel_raw/kernel_raw.sum()
+	return kernel
 
 
 # The following functions allow for converting image files into
@@ -23,4 +32,4 @@ def convolve(image, kernel):
 # Use the scipy convolve function to convolve the kernel around the image.
 # This sets up a basis for testing our convolve function
 
-convolve('img/portal.png', [[1.], [-1]])
+save_as_image(convolve('img/portal.png', gaussian()), 'img/gportal.png')
