@@ -15,8 +15,12 @@ def save_as_image(ar, pic):
 def norm(ar):
 	return 255.*np.absolute(ar)/np.max(ar)
 
+# PART 1 Function Definitions
+def convolve(image, kernel):
+	imgArray = np_from_image(image)
+	return norm(sg.convolve(imgArray, kernel))
+
 # Use the scipy convolve function to convolve the kernel around the image.
 # This sets up a basis for testing our convolve function
-img = np_from_image('img/portal.png')
-newimg = save_as_image(norm(sg.convolve(img, [[1.], [-1.]])), 'img/portal-v.png')
 
+convolve('img/portal.png', [[1.], [-1]])
