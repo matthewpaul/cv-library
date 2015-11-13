@@ -3,6 +3,7 @@ from itertools import izip
 import numpy as np 
 from scipy import signal as sg
 import scipy.stats as st
+import pylab as lab
 
 def gaussian(kernlen=21, nsig=3):
 	interval = (2*nsig+1.)/(kernlen)
@@ -74,6 +75,18 @@ def Reconstruct(L1, n):
 	print ("Difference (percentage):", (dif / 255.0 * 100) / ncomponents)
 	return reconstructedImage
 
+def imageGinput():
+	x1 = Image.open('img/portal.png')
+	fig1 = lab.figure(1)
+	ax1 = fig1.add_subplot(111)
+	ax1.imshow(x1)
+	ax1.axis('image')
+	ax1.axis('off')
+	x = fig1.ginput(2)
+
+	fig1.show()
+	print(x)
+
 #############################################################################################################################
 
 
@@ -86,5 +99,6 @@ singleDGaussian = [0.000229, 0.005977, 0.060598, 0.241732, 0.382928, 0.241732, 0
 #expand('img/portal.png').save('img/bigportal.png')
 #gaussianPyramid('img/portal.png', 2, 'img/gpportal.png')
 #laplacianPyramid('img/portal.png', 2, 'img/laplacianportal.png')
-Reconstruct('img/portal.png', 4).save('img/reconImage.png')
+#Reconstruct('img/portal.png', 3).save('img/reconImage.png')
+imageGinput()
 
