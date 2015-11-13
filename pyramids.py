@@ -42,39 +42,37 @@ def expand(image):
 	return Image.open(image).resize((width * 2, height * 2))
 
 # Returns an image reduced by a Gaussian Pyramid given an image i and number of levels n using the reduce(image) function.
-def gaussianPyramid(image, n):
-	i = image
+def gaussianPyramid(image, n, filename):
+	tempImage = image
 	for x in range(0, n):
-		reduce(i)
-	return Image.open(i)
+		reduce(tempImage).save(filename)
+		tempImage = filename
+	return Image.open(filename)
 
 # Returns an image expanded by a Laplacian Pyramid given an image I and a number of levels n using the expand(image) function.
-def laplacianPyramid(image, n):
-	i = image
+def laplacianPyramid(image, n, filename):
+	tempImage = image
 	for x in range(0, n):
-		expand(i)
-	return Image.open(i)
+		expand(tempImage).save(filename)
+		tempImage = filename
+	return Image.open(filename)
 
 # Returns the reconstructed image from the image returned by the Laplacian Pyramid function.
-def Reconstruct(L1, n)
-	
-	
- 
+def Reconstruct(L1, n):
 	originalImage = Image.open(L1)
-	reconstructedImage = gaussianPyramid(L1, n)
-	assert originalImage.mode == reconstructedImage.mode, "Different kinds of images."
-	assert originalImage.size == reconstructedImage.size, "Different sizes."
+	laplacianImage = laplacianPyramid(L1, n, 'img/reconLaplacian.png')
+	reconstructedImage = gaussianPyramid('img/reconLaplacian.png', n, 'img/reconImage.png')
  
 	pairs = izip(originalImage.getdata(), reconstructedImage.getdata())
 	if len(originalImage.getbands()) == 1:
-    	# for gray-scale jpegs
-    	dif = sum(abs(p1-p2) for p1,p2 in pairs)
+		# for gray-scale jpegs
+		dif = sum(abs(p1-p2) for p1,p2 in pairs)
 	else:
-    	dif = sum(abs(c1-c2) for p1,p2 in pairs for c1,c2 in zip(p1,p2))
+		dif = sum(abs(c1-c2) for p1,p2 in pairs for c1,c2 in zip(p1,p2))
  
 	ncomponents = originalImage.size[0] * originalImage.size[1] * 3
 	print ("Difference (percentage):", (dif / 255.0 * 100) / ncomponents)
-	return Image.open(reconstructedImage)
+	return reconstructedImage
 
 #############################################################################################################################
 
@@ -83,8 +81,10 @@ def Reconstruct(L1, n)
 # This sets up a basis for testing our convolve function
 singleDGaussian = [0.000229, 0.005977, 0.060598, 0.241732, 0.382928, 0.241732, 0.060598, 0.005977, 0.000229]
 
-save_as_image(convolve('img/portal.png', gaussian()), 'img/gportal.png')
-reduce('img/portal.png').save('img/rportal.png')
-expand('img/portal.png').save('img/bigportal.png')
-gaussianPyramid('img/portal.png').save('img/gpportal.png')
+#save_as_image(convolve('img/portal.png', gaussian()), 'img/gportal.png')
+#reduce('img/portal.png').save('img/rportal.png')
+#expand('img/portal.png').save('img/bigportal.png')
+#gaussianPyramid('img/portal.png', 2, 'img/gpportal.png')
+#laplacianPyramid('img/portal.png', 2, 'img/laplacianportal.png')
+Reconstruct('img/portal.png', 4).save('img/reconImage.png')
 
