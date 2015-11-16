@@ -157,7 +157,34 @@ def performAffineTrans(image1, image2):
 				newImage[newPoint[0]][newPoint[1]] = oldImage[i][j]
 	save_as_image(newImage, 'img/affineportal.png')
 
+def performAffineTransColor(image1, image2):
+	correspondance = imageGinput(image1, image2)
+	print correspondance
+	trn = Affine_Fit(correspondance[0], correspondance[1])
+	affineParamsX = trn.getParamsX()
+	affineParamsY = trn.getParamsY()
+	print trn.To_Str()
+	print affineParamsX
+	print affineParamsY
+	x1 = Image.open(image1)
+	x2 = Image.open(image2)
+	width1, height1 = x1.size
+	oldImage = np_from_image(image1)
+	matrixFiller = np.asarray([0, 0, 0, 255])
+	newImage = []
+	for i in range(0,height1):
+		imagevector = []
+		for j in range(0,width1):
+			imagevector.append(matrixFiller)
+		newImage.append(np.asarray(imagevector))
+	for i in range(0,height1-2):
+		for j in range(0,width1-2):
+			newPoint = (int(i * affineParamsX[0] + (j * affineParamsX[1]) + affineParamsX[2]), int(i * affineParamsY[0] + (j * affineParamsY[1]) + affineParamsY[2]))
+			if (((newPoint[0] > 0) and (newPoint[0] < height1-1)) and ((newPoint[1] > 0) and (newPoint[1] < width1-1))):
+				newImage[newPoint[0]][newPoint[1]] = oldImage[i][j] 
+	save_as_image(np.asarray(newImage), 'img/affine.png')
+
 	
 
 
-performAffineTrans('img/portal.png', 'img/portal.png')
+performAffineTransColor('img/im43.png', 'img/im44.png')
