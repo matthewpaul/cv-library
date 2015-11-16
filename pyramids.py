@@ -75,6 +75,23 @@ def Reconstruct(L1, n):
 	print ("Difference (percentage):", (dif / 255.0 * 100) / ncomponents)
 	return reconstructedImage
 
+def recover_homogenous_affine_transformation(p, p_prime):
+    # construct intermediate matrix
+    Q       = p[1:]       - p[0]
+    Q_prime = p_prime[1:] - p_prime[0]
+
+    # calculate rotation matrix
+    R = np.dot(np.linalg.inv(np.row_stack((Q, np.cross(*Q)))),
+               np.row_stack((Q_prime, np.cross(*Q_prime))))
+
+    # calculate translation vector
+    t = p_prime[0] - np.dot(p[0], R)
+
+    # calculate affine transformation matrix
+    return np.column_stack((np.row_stack((R, t)),
+                            (0, 0, 0, 1)))
+
+
 def imageGinput():
 	x1 = Image.open('img/portal.png')
 	fig1 = lab.figure(1)
@@ -100,5 +117,5 @@ singleDGaussian = [0.000229, 0.005977, 0.060598, 0.241732, 0.382928, 0.241732, 0
 #gaussianPyramid('img/portal.png', 2, 'img/gpportal.png')
 #laplacianPyramid('img/portal.png', 2, 'img/laplacianportal.png')
 #Reconstruct('img/portal.png', 3).save('img/reconImage.png')
-imageGinput()
+#imageGinput()
 

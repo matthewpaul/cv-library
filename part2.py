@@ -7,7 +7,14 @@ import pylab as lab
 from skimage import data
 from skimage import transform as tf
 
+def np_from_image(pic):
+	return np.asarray(Image.open(pic), dtype=np.float32)
+
+def save_as_image(ar, pic):
+	Image.fromarray(ar.round().astype(np.uint8)).save(pic)
+
 def Affine_Fit( from_pts, to_pts ):
+	""" Jarno Elonen, November 2007"""
 	q = from_pts
 	p = to_pts
 	if len(q) != len(p) or len(q)<1:
@@ -37,10 +44,6 @@ def Affine_Fit( from_pts, to_pts ):
 
 	# Ultra simple linear system solver. Replace this if you need speed.
 	def gauss_jordan(m, eps = 1.0/(10**10)):
-	  """Puts given matrix (2D array) into the Reduced Row Echelon Form.
-		 Returns True if successful, False if 'm' is singular.
-		 NOTE: make sure all the matrix items support fractions! Int matrix will NOT work!
-		 Written by Jarno Elonen in April 2005, released into Public Domain"""
 	  (h, w) = (len(m), len(m[0]))
 	  for y in range(0,h):
 		maxrow = y
@@ -72,8 +75,6 @@ def Affine_Fit( from_pts, to_pts ):
 
 	# Make a result object
 	class Transformation:
-		"""Result object that represents the transformation
-		   from affine fitter."""
 
 		def To_Str(self):
 			res = ""
@@ -92,6 +93,19 @@ def Affine_Fit( from_pts, to_pts ):
 					res[j] += pt[i] * M[i][j+dim+1]
 				res[j] += M[dim][j+dim+1]
 			return res
+
+		def getParamsX(self):
+			paramArray = []
+			for i in range(dim):
+				paramArray.append(M[i][dim+1])
+			paramArray.append(M[dim][dim+1])
+			return paramArray
+		def getParamsY(self):
+			paramArray = []
+			for i in range(dim):
+				paramArray.append(M[i][dim+2])
+			paramArray.append(M[dim][dim+2])
+			return paramArray
 	return Transformation()
 
 def imageGinput(image1, image2):
@@ -104,14 +118,46 @@ def imageGinput(image1, image2):
 	ax1.imshow(x1)
 	ax2.imshow(x2)
 	x = fig1.ginput(3)
+	xArray = []
+	for i in range(0,len(x)):
+		xTuple = (int(x[i][0]), int(x[i][1]))
+		xArray.append(xTuple)
 	x22 = fig2.ginput(3)
+	x22Array = []
+	for i in range(0,len(x22)):
+		x22Tuple = (int(x22[i][0]), int(x22[i][1]))
+		x22Array.append(x22Tuple)
 	fig1.show()
 	fig2.show()
-	newArray = [np.asarray(x), np.asarray(x22)]
+	newArray = [np.asarray(xArray), np.asarray(x22Array)]
+	x1.save(image1)
+	x2.save(image2)
 	print newArray
 	return newArray
 
+def performAffineTrans(image1, image2):
+	correspondance = imageGinput(image1, image2)
+	print correspondance
+	trn = Affine_Fit(correspondance[0], correspondance[1])
+	affineParamsX = trn.getParamsX()
+	affineParamsY = trn.getParamsY()
+	print trn.To_Str()
+	print affineParamsX
+	print affineParamsY
+	x1 = Image.open(image1)
+	x2 = Image.open(image2)
+	width1, height1 = x1.size
+	width2, height2 = x2.size
+	oldImage = np_from_image(image1)
+	newImage = np.zeros(shape=(height1,width1))
+	for i in range(0,height1-2):
+		for j in range(0,width1-2):
+			newPoint = (int(i * affineParamsX[0] + (j * affineParamsX[1]) + affineParamsX[2]), int(i * affineParamsY[0] + (j * affineParamsY[1]) + affineParamsY[2]))
+			if (((newPoint[0] > 0) and (newPoint[0] < height1-1)) and ((newPoint[1] > 0) and (newPoint[1] < width1-1))):
+				newImage[newPoint[0]][newPoint[1]] = oldImage[i][j]
+	save_as_image(newImage, 'img/affineportal.png')
 
-correspondance = imageGinput('img/portal.png', 'img/portal.png')
-trn = Affine_Fit(correspondance[0], correspondance[1])
-print trn.To_Str()
+	
+
+
+performAffineTrans('img/portal.png', 'img/portal.png')
