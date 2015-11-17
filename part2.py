@@ -184,7 +184,45 @@ def performAffineTransColor(image1, image2):
 				newImage[newPoint[0]][newPoint[1]] = oldImage[i][j] 
 	save_as_image(np.asarray(newImage), 'img/affine.png')
 
+def imageStitch(image1, image2):
+	correspondance = imageGinput(image1, image2)
+	print correspondance
+	trn = Affine_Fit(correspondance[0], correspondance[1])
+	affineParamsX = trn.getParamsX()
+	affineParamsY = trn.getParamsY()
+	print trn.To_Str()
+	print affineParamsX
+	print affineParamsY
+	x1 = Image.open(image1)
+	x2 = Image.open(image2)
+	width1, height1 = x1.size
+	width2, height2 = x2.size
+	oldImage = np_from_image(image1)
+	oldImage2 = np_from_image(image2)
+	matrixFiller = np.asarray([0, 0, 0, 255])
+	newImage = []
+	# Determine size constraints
+	maxwidth = width1 if width1 > width2 else width2
+	maxheight = height1 if height1 > height2 else height2
+	# Fill the new image with a buffer
+	for i in range(0,maxheight*4):
+		imagevector = []
+		for j in range(0,maxwidth*4):
+			imagevector.append(matrixFiller)
+		newImage.append(np.asarray(imagevector))
+	# Move image 2 into the new image
+	for i in range(0,height2):
+		for j in range(0,width2):
+			newImage[i+(maxwidth*2)][j+(maxheight*2)] = oldImage2[i][j]
+	# Perform affine transform of image 1 onto the new image
+	for i in range(0,height1-2):
+		for j in range(0,width1-2):
+			newPoint = (int(i * affineParamsX[0] + (j * affineParamsX[1]) + affineParamsX[2]), int(i * affineParamsY[0] + (j * affineParamsY[1]) + affineParamsY[2]))
+			newImage[newPoint[0]+(maxwidth*2)][newPoint[1]+(maxheight*2)] = oldImage[i][j] 
+			# print "(np0=" + str(newPoint[0]) + ", np1=" + str(newPoint[1]) + ") ------ maxheight = " + str(maxheight) + ", maxwidth = " + str(maxwidth)
+	save_as_image(np.asarray(newImage), 'img/affine.png')
+
 	
 
 
-performAffineTransColor('img/im43.png', 'img/im44.png')
+imageStitch('img/im2.png', 'img/im1.png')
