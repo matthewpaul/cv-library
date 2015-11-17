@@ -27,6 +27,21 @@ def norm(ar):
 	return 255.*np.absolute(ar)/np.max(ar)
 
 ########################################### PART 1 Function Definitions ####################################################
+
+#For ease and efficiency of testing other methods, our convolve is called convolveCV
+def convolveCV(image, kernel):
+	img = Image.open(image)
+	output = np.zeros
+	arr = np.array(img)
+	for row in range(1, arr.shape[0]-1):
+		for col in range(1, arr.shape[1]-1):
+			value = kernel * arr[(row - 1):(row + 2), (col - 1):(col + 2)]
+        	output[row, col] = min(255, max(0, value.sum ()))
+
+	return Image.fromarray(output)
+
+
+#Convolve from scipy used for testing other methods
 def convolve(image, kernel):
 	imgArray = np_from_image(image)
 	return norm(sg.convolve(imgArray, kernel))
@@ -110,7 +125,7 @@ def imageGinput():
 # Use the scipy convolve function to convolve the kernel around the image.
 # This sets up a basis for testing our convolve function
 singleDGaussian = [0.000229, 0.005977, 0.060598, 0.241732, 0.382928, 0.241732, 0.060598, 0.005977, 0.000229]
-
+save_as_image(convolveCV('img/portal.png', gaussian()), 'img/gpttortal.png')
 #save_as_image(convolve('img/portal.png', gaussian()), 'img/gportal.png')
 #reduce('img/portal.png').save('img/rportal.png')
 #expand('img/portal.png').save('img/bigportal.png')
